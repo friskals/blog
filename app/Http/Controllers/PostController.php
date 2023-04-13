@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Post;
 use App\Http\Requests\postss\CreatePostsRequest;
 use App\Http\Requests\postss\UpdatePostRequest;
@@ -46,7 +45,12 @@ class PostController extends Controller
      */
     public function store(CreatePostsRequest $request)
     { 
-        $image = $request->image->store('posts');
+        $image = $request->image;
+        $image = $image->storeAs(
+            'posts',
+            $image->getClientOriginalName(),
+            'public'
+        );
 
         $post =Post::create([
             'title'=>$request['title'],
@@ -61,7 +65,9 @@ class PostController extends Controller
         if($request->tags){
             $post->tags()->attach($request->tags);
         }
+
         session()->flash('success', 'Post created successfully');
+        
         return redirect(route('posts.index'));
     }
 
@@ -100,7 +106,13 @@ class PostController extends Controller
 
         if($request->hasFile('image')){
 
-            $image = $request->image->store('posts'); 
+            $image = $request->image; 
+            
+            $image = $image->storeAs(
+                'posts',
+                $image->getClientOriginalName(),
+                'public'
+            );
             
             $post->deleteImage();
             
